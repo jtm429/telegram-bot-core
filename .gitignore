@@ -1,0 +1,20 @@
+
+# Compiled Rust files
+/target/
+**/*.rs.bk
+
+# Token and user access files
+.token
+allowed_users.txt
+
+# IDE/editor configs
+.vscode/
+.idea/
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Logs and backups
+*.log
+*.tmp
