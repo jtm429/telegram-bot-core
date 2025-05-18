@@ -46,4 +46,59 @@ Or run the built binary:
 ./target/release/telegram-bot-core
 ```
 
+
+---
+
+## 🎭 On the Matter of Magical Buttons and Their Responses
+
+In the pursuit of grander user experience and the folly of human laziness, thou mayst now summon messages bearing **enchanted buttons**—symbols of decision, gates of action, vessels of interaction.
+
+### 📩 `send_message_with_buttons(chat_id, text, options)`
+
+With this sacred incantation, thou may conjure a message with clickable runes (buttons) beneath it.
+
+These buttons, once pressed, shall whisper their **label** back to thee via the callback winds of Telegram.
+
+```rust
+bot.send_message_with_buttons(
+    chat_id,
+    "Choose thy path, adventurer:",
+    vec!["Enter the Cave", "Return to Town"]
+).await;
+```
+
+No spellbook knowledge is required of the user—they must merely tap.
+
+---
+
+### ⏳ `await_callback_once()`
+
+Once the runes are summoned, thou may invoke this ritual to **pause** and **listen** for a single button-press from the stars above.
+
+```rust
+if let Some((chat_id, choice)) = bot.await_callback_once().await {
+    println!("The adventurer chose: {}", choice);
+    // Now act upon their chosen fate...
+}
+```
+
+Beware: this awaits only **one** such sign before completing. 'Tis not meant for long vigils.
+
+---
+
+### 🧪 Practical Alchemy
+
+When combined, these functions allow for **structured choices** and **interactive journeys**:
+
+```rust
+bot.send_message_with_buttons(chat_id, "Pick a relic to examine:", vec!["Orb", "Amulet", "Blade"]).await;
+
+if let Some((_chat_id, artifact)) = bot.await_callback_once().await {
+    println!("You gaze into the {}", artifact);
+}
+```
+
+Thus, your bot shall gain the power to **ask questions** and **react to answers**, like a courteous host in a realm of automata.
+
+
 May your bots run smoothly and your updates never be duplicated.
