@@ -16,6 +16,13 @@ pub struct Bot {
     allowed_users: Vec<i64>,   // List of user IDs allowed to interact with the bot
 }
 
+pub trait BotControl {
+    fn end(&self) {
+        println!("Shutting down...");
+    }
+}
+
+impl BotControl for Bot {}
 impl Bot {
     /// Creates a new bot with the given token and loads allowed users from file.
     pub fn new(token: String) -> Self {

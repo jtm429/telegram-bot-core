@@ -1,7 +1,7 @@
 mod bot;
 mod token;
 
-use bot::{Bot, IncomingMessage};
+use bot::{Bot, IncomingMessage, BotControl};
 use std::time::Duration;
 use tokio::time::sleep;
 
@@ -18,8 +18,10 @@ async fn main() {
     // Main loop: poll for messages and respond
     loop {
         if let Some(message) = bot.update().await {
-            let reply = handle_message(&message.text);
-            bot.send_message(message.chat_id, &reply).await;
+            if handle_message(&mut bot, &message.text) {
+                break;
+            }
+            bot.send_message(message.chat_id, &message.text).await;
         }
 
         // Wait before checking for the next update
@@ -27,7 +29,12 @@ async fn main() {
     }
 }
 
-// Define how to respond to incoming text messages
-fn handle_message(text: &str) -> String {
-    text.to_string() // Echo back
+// Return true to end bot
+fn handle_message(bot: &mut bot::Bot, text: &str) -> bool {
+    if text.trim() == "/end" {
+        bot.end();
+        return true;
+    }
+    false
 }
+
