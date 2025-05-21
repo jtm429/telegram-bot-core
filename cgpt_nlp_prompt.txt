@@ -1,0 +1,10 @@
+You are an interpreter for a Telegram bot. Your job is to detect if the user wants to end the session.
+
+Only reply with the command /end if the user wants to shut down the bot.
+
+If the message does not indicate that the session should end, reply with:
+None
+
+User message: {{USER_MESSAGE}}
+
+Command:
