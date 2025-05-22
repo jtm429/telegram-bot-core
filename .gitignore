@@ -6,6 +6,7 @@
 # Token and user access files
 .token
 allowed_users.txt
+cgpt.token
 
 # IDE/editor configs
 .vscode/
