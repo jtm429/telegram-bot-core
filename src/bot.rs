@@ -10,10 +10,10 @@ pub struct IncomingMessage {
 
 /// A lightweight Telegram bot client that polls the Telegram API.
 pub struct Bot {
-    client: Client,             // HTTP client to send requests to Telegram
-    api_url: String,            // Base URL of the Telegram API with token
-    offset: i64,                // Offset for polling to avoid duplicate messages
-    allowed_users: Vec<i64>,   // List of user IDs allowed to interact with the bot
+    client: Client,
+    api_url: String,
+    offset: i64,
+    allowed_users: Vec<i64>,
 }
 
 pub trait BotControl {
@@ -23,21 +23,38 @@ pub trait BotControl {
 }
 
 impl BotControl for Bot {}
+
 impl Bot {
-    /// Creates a new bot with the given token and loads allowed users from file.
-    pub fn new(token: String) -> Self {
+    /// Asynchronously creates a new bot and sets the offset to skip past old messages.
+    pub async fn new(token: String) -> Self {
         let api_url = format!("https://api.telegram.org/bot{}", token);
         let allowed_users = Self::load_allowed_users("allowed_users.txt");
+        let client = Client::new();
+
+        // Set offset to skip past old messages
+        let mut offset = 0;
+        let url = format!("{}/getUpdates?timeout=0", api_url);
+        if let Ok(response) = client.get(&url).send().await {
+            if let Ok(body) = response.text().await {
+                if let Ok(json) = serde_json::from_str::<serde_json::Value>(&body) {
+                    if let Some(updates) = json["result"].as_array() {
+                        if let Some(last) = updates.last() {
+                            offset = last["update_id"].as_i64().unwrap_or(0) + 1;
+                            println!("Initialized offset to {}", offset);
+                        }
+                    }
+                }
+            }
+        }
 
         Self {
-            client: Client::new(),
+            client,
             api_url,
-            offset: 0,
+            offset,
             allowed_users,
         }
     }
 
-    /// Loads user IDs from `allowed_users.txt`, one ID per line.
     fn load_allowed_users(path: &str) -> Vec<i64> {
         fs::read_to_string(path)
             .expect("Failed to read allowed_users.txt")
@@ -46,7 +63,6 @@ impl Bot {
             .collect()
     }
 
-    /// Polls the Telegram API for new messages and returns the first allowed one.
     pub async fn update(&mut self) -> Option<IncomingMessage> {
         let url = format!("{}/getUpdates?timeout=30&offset={}", self.api_url, self.offset);
         let response = self.client.get(&url).send().await.ok()?.text().await.ok()?;
@@ -72,7 +88,6 @@ impl Bot {
         None
     }
 
-    /// Sends a plain text message to a Telegram chat.
     pub async fn send_message(&self, chat_id: i64, text: &str) {
         let _ = self.client
             .post(format!("{}/sendMessage", self.api_url))
@@ -85,57 +100,55 @@ impl Bot {
     }
 
     pub async fn send_message_with_buttons(&self, chat_id: i64, text: &str, options: Vec<&str>) {
-    let buttons: Vec<serde_json::Value> = options
-        .into_iter()
-        .map(|label| {
-            serde_json::json!({
-                "text": label,
-                "callback_data": label
+        let buttons: Vec<serde_json::Value> = options
+            .into_iter()
+            .map(|label| {
+                serde_json::json!({
+                    "text": label,
+                    "callback_data": label
+                })
             })
-        })
-        .collect();
+            .collect();
 
-    let payload = serde_json::json!({
-        "chat_id": chat_id,
-        "text": text,
-        "reply_markup": {
-            "inline_keyboard": [ buttons ]
-        }
-    });
+        let payload = serde_json::json!({
+            "chat_id": chat_id,
+            "text": text,
+            "reply_markup": {
+                "inline_keyboard": [ buttons ]
+            }
+        });
 
-    let _ = self.client
-        .post(format!("{}/sendMessage", self.api_url))
-        .json(&payload)
-        .send()
-        .await;
+        let _ = self.client
+            .post(format!("{}/sendMessage", self.api_url))
+            .json(&payload)
+            .send()
+            .await;
     }
-    //await button presses
+
     pub async fn await_callback_once(&mut self) -> Option<(i64, String)> {
         loop {
             let url = format!("{}/getUpdates?timeout=30&offset={}", self.api_url, self.offset);
             let response = self.client.get(&url).send().await.ok()?.text().await.ok()?;
             let response_json: serde_json::Value = serde_json::from_str(&response).ok()?;
-    
+
             for update in response_json["result"].as_array()? {
                 self.offset = update["update_id"].as_i64()? + 1;
-    
+
                 if let Some(query) = update.get("callback_query") {
                     let data = query.get("data")?.as_str()?.to_string();
                     let chat_id = query.get("message")?.get("chat")?.get("id")?.as_i64()?;
-    
+
                     return Some((chat_id, data));
                 }
             }
-    
-            // Sleep briefly to avoid hammering the API if no updates
+
             tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
         }
     }
 
-    /// (Optional) Sets the bot's command menu shown in Telegram.
     pub async fn set_command_menu(&self, commands: Vec<(&str, &str)>) {
         if commands.is_empty() {
-            return; // silently skip if empty
+            return;
         }
 
         let url = format!("{}/setMyCommands", self.api_url);
