@@ -1,3 +1,4 @@
+
 # Telegram Bot Template (Rust)
 
 This project is a template to be used when making Telegram bots.
@@ -13,6 +14,10 @@ Should thou wish to fork my content, thou should be aware of several things:
 1. **An API key** must be created using the Telegram [@BotFather](https://t.me/botfather).
 2. This key should be saved in a file called **`.token`** (do *not* commit this file).
 3. Additionally, thou shall need to create a file named **`allowed_users.txt`** containing **your Telegram user ID**.
+4. Thou must now also prepare the following scrolls of personality and purpose:
+    - **`cgpt.token`**: An OpenAI API token, for summoning language models.
+    - **`cgpt_nlp_prompt.txt`**: The sacred prompt that tells GPT how to interpret user messages. You will need to edit it to allow GPT to execute the codes.
+    - **`personality.txt`**: A character-defining missive that bestows sass, angst, or professionalism upon the bot's soul.
 
 Example:
 ```
@@ -45,7 +50,6 @@ Or run the built binary:
 ```bash
 ./target/release/telegram-bot-core
 ```
-
 
 ---
 
@@ -100,5 +104,6 @@ if let Some((_chat_id, artifact)) = bot.await_callback_once().await {
 
 Thus, your bot shall gain the power to **ask questions** and **react to answers**, like a courteous host in a realm of automata.
 
+---
 
-May your bots run smoothly and your updates never be duplicated.
+May your bots run smoothly, your GPT prompts be clever, and your system personalities delightfully dysfunctional.
