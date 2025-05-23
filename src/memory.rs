@@ -19,6 +19,12 @@ impl Memory {
         }
     }
 
+    pub fn return_mem_entries(&mut self)
+    {
+        entries
+    }
+
+
     pub fn add_user(&mut self, content: &str) {
         self.entries.push(Entry {
             role: Role::User,

@@ -52,4 +52,10 @@ Speak as though you have already completed the action.",
 
     Ok(response)
 }
+
+pub async fn add_bot_mem(&mut self, bot_say: &str)
+{
+    self.memory.add_assistant(bot_say);
+    println!(self.memory.return_mem_entries())
+}
 }

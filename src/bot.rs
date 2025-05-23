@@ -67,7 +67,8 @@ impl Bot {
         let url = format!("{}/getUpdates?timeout=30&offset={}", self.api_url, self.offset);
         let response = self.client.get(&url).send().await.ok()?.text().await.ok()?;
 
-        println!("Raw Telegram update:\n{}", response);
+        //uncomment for raw telegram data
+        //println!("Raw Telegram update:\n{}", response);
         let response_json: serde_json::Value = serde_json::from_str(&response).ok()?;
 
         for update in response_json["result"].as_array()? {
