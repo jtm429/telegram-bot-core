@@ -39,7 +39,7 @@ Available commands:
 The user sent the following message:\n\"{}\"\n\n\
 You interpreted this message and executed the following command:\n{}\n\n\
 Now, explain to the user in plain language what you did and why this command was chosen. \
-Speak as though you have already completed the action.",
+Speak as though you have already completed the action. ",
     message.trim(),
     command.trim()
 );
@@ -53,9 +53,45 @@ Speak as though you have already completed the action.",
     Ok(response)
 }
 
+pub async fn interpret_output(
+    &mut self,
+    user_command: &str,
+    command_output: &str,
+) -> Result<String, Box<dyn std::error::Error>> {
+    let prompt = format!(
+        "You are an assistant that helps users understand the results of their commands.\n\n\
+The user ran the following command:\n\"{}\"\n\n\
+The command returned the following output:\n{}\n\n\
+Now, explain to the user in plain, simple language what this output means. \
+If it's a list or data table, summarize what kind of information it contains. \
+Avoid repeating the command or output unless necessary — focus on helping the user understand what they're seeing.",
+        user_command.trim(),
+        command_output.trim()
+    );
+
+    let explanation = self.chatgpt.prompt(&prompt).await?;
+
+    // Log the user input and your explanation to memory
+    self.memory.add_user(&format!("Command: {}\nOutput:\n{}", user_command, command_output));
+    self.memory.add_assistant(&explanation);
+
+    Ok(explanation)
+}
+
+pub fn print_bot_mem(&mut self)
+{
+    println!("Printing memory entries: count = {}", self.memory.return_mem_entries().len());
+    for entryy in &self.memory.return_mem_entries()
+    {
+        println!("{}", entryy)
+    }
+
+}
+
 pub async fn add_bot_mem(&mut self, bot_say: &str)
 {
     self.memory.add_assistant(bot_say);
-    println!(self.memory.return_mem_entries())
+
+    self.print_bot_mem();
 }
 }

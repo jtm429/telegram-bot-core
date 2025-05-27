@@ -61,8 +61,17 @@ pub async fn handle_message(
         let mut messybessy = handle_command(accbot, text);
         println!("manual command output: {}", messybessy);
         
-        personality.add_bot_mem(&messybessy);
-        bot.send_message(message.chat_id, &messybessy);
+        //personality.add_bot_mem(&messybessy);
+        bot.send_message(message.chat_id, &messybessy).await;
+        match personality.interpret_output(text,&messybessy).await {
+            Ok(explanation) => {
+                bot.send_message(message.chat_id, &explanation).await;
+            }
+            Err(err) => {
+                eprintln!("Failed to interpret output: {}", err)
+            }
+        }
+        
     } else {
 
 

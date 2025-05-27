@@ -1,11 +1,25 @@
+use std::fmt;
+
+#[derive(Clone)]
 pub enum Role {
     User,
     Assistant,
 }
 
+#[derive(Clone)]
 pub struct Entry {
     pub role: Role,
     pub content: String,
+}
+
+impl fmt::Display for Entry {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let role = match self.role {
+            Role::User => "User",
+            Role::Assistant => "Assistant",
+        };
+        write!(f, "{}: {}", role, self.content)
+    }
 }
 
 pub struct Memory {
@@ -19,9 +33,9 @@ impl Memory {
         }
     }
 
-    pub fn return_mem_entries(&mut self)
+    pub fn return_mem_entries(&mut self) -> Vec<Entry>
     {
-        entries
+        self.entries.clone()
     }
 
 
