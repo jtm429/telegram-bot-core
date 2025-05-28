@@ -8,6 +8,7 @@
 allowed_users.txt
 cgpt.token
 personality.txt
+accountant_data.txt
 
 # IDE/editor configs
 .vscode/

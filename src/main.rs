@@ -9,6 +9,7 @@ use bot::{Bot, IncomingMessage, BotControl};
 use cgptwrapper::ChatGPTWrapper;
 use std::fs;
 use std::time::Duration;
+use std::io::ErrorKind;
 use tokio::time::sleep;
 use crate::personality::Personality;
 use crate::accountant::AccountantBot;
@@ -26,6 +27,18 @@ async fn main() {
 
     let mut personality = Personality::new(); // Conversational personality
     let mut accbot = AccountantBot::new();
+    match accbot.load_from_file("accountant_data.txt") {
+            Ok(()) => println!("Data loaded successfully."),
+            Err(e) if e.kind() == ErrorKind::NotFound => {
+                println!("No existing data file found. Starting fresh.");
+            }
+            Err(e) => {
+                eprintln!("Failed to load data: {}", e);
+            }
+    }
+
+
+
     println!("Bot is running...");
 
     loop {
@@ -53,6 +66,7 @@ pub async fn handle_message(
 
     if text.trim() == "/end" {
         bot.end();
+        end_protocol(accbot);
         return true;
     }
     if text.trim().starts_with('/')
@@ -107,6 +121,7 @@ pub async fn handle_message(
 
     if command.trim() == "/end" {
         bot.end();
+        end_protocol(accbot);
         return true;
     }
 
@@ -114,6 +129,13 @@ pub async fn handle_message(
 
     false
 }
+
+pub fn end_protocol(bot: &mut AccountantBot)
+{
+    bot.save_to_file("accountant_data.txt");
+    
+}
+
 pub fn handle_command(bot: &mut AccountantBot, input: &str) -> String {
     let parts: Vec<&str> = input.trim().split_whitespace().collect();
     if parts.is_empty() {
