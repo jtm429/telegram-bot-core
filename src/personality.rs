@@ -31,6 +31,11 @@ pub async fn prompt(&mut self, user_input: &str) -> Result<String, Box<dyn std::
 pub async fn explain_command(&mut self, message: &str, command: &str) -> Result<String, Box<dyn std::error::Error>> {
     let command_list = r#"
 Available commands:
+- /in <amount> <description>: An amount of income and the description of what it is
+- /out <amount> <description>: An amount spent and what it was spent on
+- /balance: gets the current balance of the ledger
+- /summary: gets a summary with income, expenses, and net.
+- /undo: undoes the previous transation.
 - /end: ends the bot.
 "#;
 
